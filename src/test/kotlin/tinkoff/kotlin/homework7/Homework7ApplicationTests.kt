@@ -26,7 +26,7 @@ import kotlin.text.Charsets.UTF_8
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class PersonServiceTest(private val mockMvc: MockMvc, private val objectMapper: ObjectMapper) : FeatureSpec() {
+class ClientServiceTest(private val mockMvc: MockMvc, private val objectMapper: ObjectMapper) : FeatureSpec() {
 
     @MockkBean
     private lateinit var infoClient: ClientInfo
@@ -45,7 +45,7 @@ class PersonServiceTest(private val mockMvc: MockMvc, private val objectMapper: 
     }
     override fun extensions(): List<Extension> = listOf(SpringExtension)
 
-    override fun beforeSpec(spec: Spec) {
+    override suspend fun beforeSpec(spec: Spec) {
         image.saveClient(client1)
         image.saveClient(client2)
         image.saveClient(client3)
@@ -63,8 +63,8 @@ class PersonServiceTest(private val mockMvc: MockMvc, private val objectMapper: 
             mockMvc.get("/get/{client1.id}", client1.id).andReturn().response.status shouldBe HttpStatus.OK.value()
         }
         feature("получение пользователя по id") {
-                val person = getByID(client1.id)
-                person shouldBe client1
+                val client = getByID(client1.id)
+                client shouldBe client1
         }
         feature("пагинационный лист") {
             scenario("выдает страницу") {
@@ -89,12 +89,12 @@ class PersonServiceTest(private val mockMvc: MockMvc, private val objectMapper: 
     private fun adding(id: Int): Client =
         mockMvc.post("/add") { contentType = MediaType.TEXT_PLAIN; content = id }.readResponse()
 
-    private fun addStatus(passportNumber: Int): Int =
-        mockMvc.post("/add") { contentType = MediaType.TEXT_PLAIN; content = passportNumber }
+    private fun addStatus(id: Int): Int =
+        mockMvc.post("/add") { contentType = MediaType.TEXT_PLAIN; content = id }
             .andReturn().response.status
 
     private fun getByID(id: Int): Client =
-        mockMvc.get("/get/{passportNumber}", id).readResponse()
+        mockMvc.get("/get/{id}", id).readResponse()
 
 
     private fun pagg(name: String, pageSize: Int, page: Int): List<Client> =
